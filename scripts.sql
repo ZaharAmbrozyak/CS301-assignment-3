@@ -96,3 +96,18 @@ create trigger log_add_trigger
 after insert on orders
 for each row
 execute function triger_log();
+
+-- Testing
+call create_order(1);
+call create_order(2);
+call create_order(3);
+select * from order_log;
+
+call add_product_to_order(1, 1, 1); 
+call add_product_to_order(2, 2, 2);
+call add_product_to_order(3, 3, 3);
+call add_product_to_order(1, 2, 3);
+
+select * from orders where order_id = 1; 
+
+select * from products; 

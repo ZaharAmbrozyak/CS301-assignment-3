@@ -1,3 +1,4 @@
+-- Task 1
 create or replace function calculate_order_total(p_order_id int)
 returns numeric as $$
 declare
@@ -11,6 +12,7 @@ begin
 end;
 $$ language plpgsql;
 
+-- Task 2
 create or replace procedure create_order(p_customer_id int)
 language plpgsql as $$
 begin
@@ -23,6 +25,7 @@ begin
 end;
 $$;
 
+-- Task 3
 create or replace procedure add_product_to_order(p_order_id int, p_product_id int, p_quantity int
 )
 language plpgsql as $$
@@ -51,3 +54,45 @@ begin
 end;
 $$;
 
+-- Task 4
+create or replace function triger_order()
+returns trigger as $$
+declare
+    t_order_id int;
+begin
+    if tg_op = 'DELETE' then
+        t_order_id := old.order_id;
+    else
+        t_order_id := new.order_id;
+    end if;
+
+    update orders
+    set total_amount = calculate_order_total(t_order_id)
+    where order_id = t_order_id;
+
+    if tg_op = 'DELETE' then
+        return old;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+
+create trigger order_total_trigger
+after insert or update of quantity, price or delete on order_items
+for each row
+execute function triger_order();
+
+-- Task 5
+create or replace function triger_log()
+returns trigger as $$
+begin
+    insert into order_log (order_id, customer_id, action, log_date)
+    values (new.order_id, new.customer_id, 'new_order', current_timestamp);
+    return new;
+end;
+$$ language plpgsql;
+
+create trigger log_add_trigger
+after insert on orders
+for each row
+execute function triger_log();

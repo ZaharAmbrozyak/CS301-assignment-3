@@ -1,4 +1,4 @@
--- Task 1
+-- Таск 1 - функція
 create or replace function calculate_order_total(p_order_id int)
 returns numeric as $$
 declare
@@ -12,7 +12,7 @@ begin
 end;
 $$ language plpgsql;
 
--- Task 2
+-- Таск 2 - процедура
 create or replace procedure create_order(p_customer_id int)
 language plpgsql as $$
 begin
@@ -25,7 +25,7 @@ begin
 end;
 $$;
 
--- Task 3
+-- Таск 3 - процедура
 create or replace procedure add_product_to_order(p_order_id int, p_product_id int, p_quantity int
 )
 language plpgsql as $$
@@ -54,7 +54,7 @@ begin
 end;
 $$;
 
--- Task 4
+-- Таск 3 - тригер
 create or replace function triger_order()
 returns trigger as $$
 declare
@@ -82,7 +82,7 @@ after insert or update of quantity, price or delete on order_items
 for each row
 execute function triger_order();
 
--- Task 5
+-- Таск 4 - тригер
 create or replace function triger_log()
 returns trigger as $$
 begin
@@ -97,7 +97,7 @@ after insert on orders
 for each row
 execute function triger_log();
 
--- Testing
+-- Тестування
 call create_order(1);
 call create_order(2);
 call create_order(3);
@@ -111,3 +111,17 @@ call add_product_to_order(1, 2, 3);
 select * from orders where order_id = 1; 
 
 select * from products; 
+
+
+-- допка
+-- Пояснення до аналізу в explain_analyze.md
+explain analyze
+select
+    o.order_id,
+    p.product_name,
+    o.quantity,
+    o.price,
+    o.quantity * o.price as item_total
+from order_items o
+join products p on o.product_id = p.product_id
+where o.order_id = 2;

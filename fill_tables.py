@@ -6,9 +6,9 @@ from psycopg2.extras import execute_values
 DB_CONFIG = {
     "host": 'localhost', # put your credentials here
     "port": "5432", # put your credentials here
-    "dbname": "stores", # put your credentials here
+    "dbname": "assignment-3", # put your credentials here
     "user": "postgres", # put your credentials here
-    "password": "1", # put your credentials here
+    "password": "1234", # put your credentials here
 }
 
 

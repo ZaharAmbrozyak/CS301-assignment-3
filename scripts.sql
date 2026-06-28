@@ -1,24 +1,53 @@
-create or replace function calculate_order(order_id int)
+create or replace function calculate_order_total(p_order_id int)
 returns numeric as $$
 declare
     total numeric(10,2);
 begin
     select coalesce(sum(quantity * price), 0) into total
     from order_items
-    where order_id = order_id;
+    where order_id = p_order_id;
     
     return total;
 end;
 $$ language plpgsql;
 
-create or replace procedure create_order(id int)
+create or replace procedure create_order(p_customer_id int)
 language plpgsql as $$
 begin
-    if not exists (select 67 from customers where customer_id = id) then
-        raise exception 'Error!';
+    if not exists (select 1 from customers where customer_id = p_customer_id) then
+        raise exception 'No such customer!';
     end if;
 
     insert into orders (customer_id, order_date, total_amount)
-    values (id, current_timestamp, 0);
+    values (p_customer_id, current_timestamp, 0);
 end;
 $$;
+
+create or replace procedure add_product_to_order(p_order_id int, p_product_id int, p_quantity int
+)
+language plpgsql as $$
+declare
+    p_price numeric(10,2);
+    s_stock int;
+begin
+    if p_quantity <= 0 then
+        raise exception 'Quantity should be positive!';
+    end if;
+
+    select price, stock_quantity into p_price, s_stock
+    from products 
+    where product_id = p_product_id;
+
+    if s_stock < p_quantity then
+        raise exception 'Theres not enough of stock!';
+    end if;
+
+    insert into order_items (order_id, product_id, quantity, price)
+    values (p_order_id, p_product_id, p_quantity, p_price);
+
+    update products
+    set stock_quantity = stock_quantity - p_quantity
+    where product_id = p_product_id;
+end;
+$$;
+
